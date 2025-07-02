@@ -9,12 +9,16 @@
 - 🔁 **Dual-Memory Object Transformer**  
 
 - 🧩 **Memory Refinement Module**  
-  Supports FPN-based or Deconv-based decoders.
 ---
 
 ## 🖼️ Architecture Overview
 
+## 🔧 Installation
 
-
+```bash
+git clone https://github.com/whdgusdl48/EVOLVE.
+cd EVOLVE
+pip install -r requirements.txt
+```
 
 
