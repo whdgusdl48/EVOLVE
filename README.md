@@ -36,5 +36,11 @@ pip install -e .
 
 (If you encounter the File "setup.py" not found error, upgrade your pip with pip install --upgrade pip)
 
+## Training and Evaluation
+
+1. [Running EVOLVE on dataset.](docs/EVALUATION.md)
+2. [Training EVOLOE.](docs/TRAINING.md)
+
+
 
 
