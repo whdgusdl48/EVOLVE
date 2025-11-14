@@ -4,7 +4,7 @@
 </div>
 
 ## News
-- We will release code. Commming Soon!!!!
+- We will release code. Coming Soon!!!!
 
 ## 📌 Key Features
 
@@ -28,8 +28,8 @@ This project uses the following datasets:
 
 
 ## Qualititative Result
-
-Will be update
+<img src="https://github.com/whdgusdl48/EVOLVE/blob/main/assets/Result_LLEVOS.png" />
+<img src="https://github.com/whdgusdl48/EVOLVE/blob/main/assets/Result_LLEDAVIS.png" />
 
 ## Citation
 ```BibTeX
