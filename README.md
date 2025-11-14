@@ -15,16 +15,8 @@
 - 🧩 **Memory Refinement Module**  
 ---
 
-## Dataset
-
-This project uses the following datasets:
-
-### 1. [LLE-VOS]  
-- **Download URL**: https://github.com/HebeiFast/EventLowLightVOS
-
-
-### 2. [LLE-DAVIS]  
-- **Download URL**: https://github.com/HebeiFast/EventLowLightVOS
+## Data preparation & Installation
+See [Datasets](datasets/README.md) & [Installation](INSTALL.md)
 
 
 ## Qualititative Result
