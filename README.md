@@ -1,6 +1,6 @@
 # 🧠 EVOLVE : Event-Guided Deformable Feature Transfer and Dual-Memory Refinement for Low-Light Video Object Segmentation (ICCV 2025)
 
-<img src="https://github.com/whdgusdl48/EVOLVE/blob/main/assets/main.PNG" width="800"/>
+<img src="https://github.com/whdgusdl48/EVOLVE/blob/main/assets/Main.png" width="800"/>
 </div>
 
 ## News
