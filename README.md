@@ -16,7 +16,7 @@
 ---
 
 ## Data preparation & Installation
-See [Datasets](datasets/README.md) & [Installation](INSTALL.md)
+See [Datasets](datasets/Readme.md) & [Installation](INSTALL.md)
 
 
 ## Qualititative Result
