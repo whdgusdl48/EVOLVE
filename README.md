@@ -20,10 +20,10 @@ See [Datasets](datasets/Readme.md) & [Installation](INSTALL.md)
 
 ## Training Command
 
-We trained with four A100 GPUs, which took around 30 hours.
+We trained with four A6000 GPUs, which took around 10 hours on LLE-VIS.
 
 ```
-OMP_NUM_THREADS=4 torchrun --master_port 25357 --nproc_per_node=4 evolve/train.py exp_id=[some unique id] model=[small/base] data=[base/with-mose/mega]
+OMP_NUM_THREADS=4 torchrun --master_port 25357 --nproc_per_node=4 evolve/train.py exp_id=[some unique id] model=base data=base
 ```
 
 - Change `nproc_per_node` to change the number of GPUs.
@@ -31,8 +31,6 @@ OMP_NUM_THREADS=4 torchrun --master_port 25357 --nproc_per_node=4 evolve/train.p
 - Change `master_port` if you encounter port collision.
 - `exp_id` is a unique experiment identifier that does not affect how the training is done.
 - Models and visualizations will be saved in `./output/`.
-- For pre-training only, specify `main_training.enabled=False`.
-- For main training only, specify `pre_training.enabled=False`.
 - To load a pre-trained model, e.g., to continue main training from the final model from pre-training, specify `weights=[path to the model]`.
 
 
