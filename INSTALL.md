@@ -11,12 +11,12 @@
 
 ### Example conda environment setup
 ```bash
-conda create --name cavis python=3.8 -y
-conda activate cavis
-pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+conda create --name evolve python=3.8 -y
+conda activate evolve
+pip install torch==1.12.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.0 -f https://download.pytorch.org/whl/torch_stable.html
 pip install -U opencv-python
 
 # download this repository and unzip
-cd Evolve
+cd EVOLVE
 pip install -e .
 ```
