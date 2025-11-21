@@ -5,7 +5,8 @@
 
 ## Generate EventVoxel for dataset:
 
-- To generate EventVoxel for datasets, convert eventstream to eventvoxel type from `generate_voxel.py`
+- To generate EventVoxel for datasets, convert eventstream to eventvoxel type from `Gen_Event/generate_voxel.py`
+- Command : python generate_voxel.py
 
 EVOVLE has builtin support for two datasets.
 
