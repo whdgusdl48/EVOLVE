@@ -4,6 +4,7 @@
 </div>
 
 ## News
+-[New] We upload the qualititative result on Google Drive[Link](https://drive.google.com/file/d/15amruErqJ4E8UUSBxTk9MVPKf3z9Urqq/view?usp=sharing)
 - We will release code. Coming Soon!!!!
 
 ## 📌 Key Features
