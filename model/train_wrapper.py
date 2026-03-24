@@ -42,19 +42,21 @@ class CutieTrainWrapper(CUTIE):
         def get_ms_feat_ti(ti):
             return [f[:, ti] for f in ms_feat]
 
+        def get_ms_event_ti(ti):
+            return [f[:, ti] for f in ms_event]
+
         with torch.cuda.amp.autocast(enabled=self.use_amp):
             frames_flat = frames.view(b * seq_length, *frames.shape[2:])
             events_flat = events.view(b * seq_length, *events.shape[2:])
             ms_feat, ms_event, pix_feat, event_feat = self.encode_image(frames_flat, events_flat)
 
             with torch.cuda.amp.autocast(enabled=False):
-                keys, shrinkages, selections= self.transform_key(ms_feat[0].float(), ms_event[0].float())
+                keys, shrinkages, selections, offset = self.transform_key(ms_feat[0].float(), ms_event[0].float())
                 e_keys, e_shrinkages, e_selections = self.transform_event_key(ms_event[0].float())
 
             # ms_feat: tuples of (B*T)*C*H*W -> B*T*C*H*W
             # keys/shrinkages/selections: (B*T)*C*H*W -> B*C*T*H*W
-
-
+            
             ms_feat[0] = ms_feat[0] + ms_event[0]
             ms_feat[1] = ms_feat[1] + ms_event[1]
             ms_feat[2] = ms_feat[2] + ms_event[2]
@@ -69,8 +71,9 @@ class CutieTrainWrapper(CUTIE):
             e_shrinkages = self.move_t_from_batch_to_volume(e_shrinkages)
             e_selections = self.move_t_from_batch_to_volume(e_selections)
 
-            # offset = self.move_t_from_batch_to_volume(offset)
+            offset = self.move_t_from_batch_to_volume(offset)
             ms_feat = [self.move_t_out_of_batch(f) for f in ms_feat]
+            ms_event = [self.move_t_out_of_batch(f) for f in ms_event]
             pix_feat = self.move_t_out_of_batch(pix_feat)
             event_feat = self.move_t_out_of_batch(event_feat)
             # zero-init sensory
@@ -94,6 +97,7 @@ class CutieTrainWrapper(CUTIE):
                     ref_shrinkages = shrinkages[:, :, :ti] if shrinkages is not None else None
                     ref_e_keys = e_keys[:, :, :ti]
                     ref_e_shrinkages = e_shrinkages[:, :, :ti] if e_shrinkages is not None else None
+                    ref_msk_values = self.mask_offset_conv(ref_msk_values, offset[:, :, :ti].unsqueeze(1))
                 else:
                     # pick num_ref_frames random frames
                     # this is not very efficient but I think we would
@@ -109,17 +113,20 @@ class CutieTrainWrapper(CUTIE):
                     ref_shrinkages = torch.stack([shrinkages[bi, :, ridx[bi]] for bi in range(b)], 0)
                     ref_e_keys = torch.stack([e_keys[bi, :, ridx[bi]] for bi in range(b)], 0)
                     ref_e_shrinkages = torch.stack([e_shrinkages[bi, :, ridx[bi]] for bi in range(b)], 0)
-                    # ref_offset = torch.stack([offset[bi, :, ridx[bi]] for bi in range(b)], 0)
-                    #ref_msk_values = self.mask_offset_conv(ref_msk_values, ref_offset.unsqueeze(1))
+                    ref_offset = torch.stack([offset[bi, :, ridx[bi]] for bi in range(b)], 0)
+                    ref_msk_values = self.mask_offset_conv(ref_msk_values, ref_offset.unsqueeze(1))
                 # Segment frame ti
-                readout, aux_input = self.read_memory(keys[:, :, ti], selections[:, :, ti],
+                readout, e_readout, aux_input = self.read_memory(keys[:, :, ti], selections[:, :, ti],
                                                       e_keys[:, :, ti], e_selections[:, :, ti],
                                                       ref_keys, ref_shrinkages, ref_e_keys, ref_e_shrinkages,
                                                       ref_msk_values, obj_values, e_obj_values,
                                                       pix_feat[:, ti], event_feat[:, ti], sensory, masks, selector)
                 aux_output = self.compute_aux(pix_feat[:, ti], aux_input, selector)
+
                 sensory, logits, masks = self.segment(get_ms_feat_ti(ti),
+                                                      get_ms_event_ti(ti),
                                                       readout,
+                                                      e_readout,
                                                       sensory,
                                                       selector=selector)
                 # remove background
