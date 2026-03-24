@@ -42,9 +42,6 @@ class CutieTrainWrapper(CUTIE):
         def get_ms_feat_ti(ti):
             return [f[:, ti] for f in ms_feat]
 
-        def get_ms_event_ti(ti):
-            return [f[:, ti] for f in ms_event]
-
         with torch.cuda.amp.autocast(enabled=self.use_amp):
             frames_flat = frames.view(b * seq_length, *frames.shape[2:])
             events_flat = events.view(b * seq_length, *events.shape[2:])
@@ -56,7 +53,8 @@ class CutieTrainWrapper(CUTIE):
 
             # ms_feat: tuples of (B*T)*C*H*W -> B*T*C*H*W
             # keys/shrinkages/selections: (B*T)*C*H*W -> B*C*T*H*W
-            
+
+
             ms_feat[0] = ms_feat[0] + ms_event[0]
             ms_feat[1] = ms_feat[1] + ms_event[1]
             ms_feat[2] = ms_feat[2] + ms_event[2]
@@ -73,7 +71,6 @@ class CutieTrainWrapper(CUTIE):
 
             offset = self.move_t_from_batch_to_volume(offset)
             ms_feat = [self.move_t_out_of_batch(f) for f in ms_feat]
-            ms_event = [self.move_t_out_of_batch(f) for f in ms_event]
             pix_feat = self.move_t_out_of_batch(pix_feat)
             event_feat = self.move_t_out_of_batch(event_feat)
             # zero-init sensory
@@ -116,17 +113,14 @@ class CutieTrainWrapper(CUTIE):
                     ref_offset = torch.stack([offset[bi, :, ridx[bi]] for bi in range(b)], 0)
                     ref_msk_values = self.mask_offset_conv(ref_msk_values, ref_offset.unsqueeze(1))
                 # Segment frame ti
-                readout, e_readout, aux_input = self.read_memory(keys[:, :, ti], selections[:, :, ti],
+                readout, aux_input = self.read_memory(keys[:, :, ti], selections[:, :, ti],
                                                       e_keys[:, :, ti], e_selections[:, :, ti],
                                                       ref_keys, ref_shrinkages, ref_e_keys, ref_e_shrinkages,
                                                       ref_msk_values, obj_values, e_obj_values,
                                                       pix_feat[:, ti], event_feat[:, ti], sensory, masks, selector)
                 aux_output = self.compute_aux(pix_feat[:, ti], aux_input, selector)
-
                 sensory, logits, masks = self.segment(get_ms_feat_ti(ti),
-                                                      get_ms_event_ti(ti),
                                                       readout,
-                                                      e_readout,
                                                       sensory,
                                                       selector=selector)
                 # remove background
