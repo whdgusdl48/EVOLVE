@@ -214,7 +214,7 @@ class CUTIE(nn.Module):
         pixel_readout2 = self.pixel_fusion(pix_feat, pixel_readout, sensory, last_mask)
         event_feat = self.event_fusion(event_feat, event_readout, sensory, last_mask)
         # read from query transformer
-        mem_readout, e_mem_readout, aux_features = self.readout_query(pixel_readout2, event_feat, obj_memory, e_obj_memory,
+        mem_readout, aux_features = self.readout_query(pixel_readout2, event_feat, obj_memory, e_obj_memory,
                                                        selector=selector)
 
         aux_output = {
@@ -224,7 +224,7 @@ class CUTIE(nn.Module):
             'attn_mask': aux_features['attn_mask'] if aux_features else None,
         }
 
-        return mem_readout, e_mem_readout, aux_output
+        return mem_readout, aux_output
 
     def pixel_fusion(self,
                      pix_feat: torch.Tensor,
