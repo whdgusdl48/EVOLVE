@@ -63,4 +63,15 @@ python cutie/eval_vos.py dataset=[dataset] weights=[path to model file] model=[s
 }
 ```
 
+## References
+
+- The GUI tools uses [RITM](https://github.com/SamsungLabs/ritm_interactive_segmentation) for interactive image segmentation. This repository also contains a redistribution of their code in `gui/ritm`. That part of code follows RITM's license.
+
+- The interactive demo is developed upon [IVS](https://github.com/seoungwugoh/ivs-demo), [MiVOS](https://github.com/hkchengrex/MiVOS), and [XMem](https://github.com/hkchengrex/XMem).
+
+- We used framework from [CUTIE](https://github.com/hkchengrex/Cutie).
+
+- Thanks to [RTIM](https://github.com/SamsungLabs/ritm_interactive_segmentation) and [XMem++](https://github.com/max810/XMem2) for making this possible.
+
+
 
