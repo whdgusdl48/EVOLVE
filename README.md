@@ -5,7 +5,7 @@
 
 ## News
 - [New] We upload the LLE-VOS qualititative result on Google Drive [Link](https://drive.google.com/file/d/15amruErqJ4E8UUSBxTk9MVPKf3z9Urqq/view?usp=sharing)
-- [New] We upload the LLE-DAVIS qualititative result on Google Drive [Link](https://drive.google.com/file/d/15amruErqJ4E8UUSBxTk9MVPKf3z9Urqq/view?usp=sharing)
+- [New] We upload the LLE-DAVIS qualititative result on Google Drive [Link]([https://drive.google.com/file/d/15amruErqJ4E8UUSBxTk9MVPKf3z9Urqq/view?usp=sharing](https://drive.google.com/file/d/1oZ8QqSsdUMka6n6XC23HHieU-RLe_NrD/view?usp=sharing))
 
 ## 📌 Key Features
 
