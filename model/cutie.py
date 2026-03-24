@@ -38,17 +38,25 @@ class CUTIE(nn.Module):
 
         self.pix_feat_proj = nn.Conv2d(self.ms_dims[0], self.pixel_dim, kernel_size=1)
         self.evt_feat_proj = nn.Conv2d(self.ms_dims[0], self.pixel_dim, kernel_size=1)
-        self.key_proj = EventKeyProjection(model_cfg)
+        self.key_proj = KeyProjection(model_cfg)
         self.event_key_proj = EventKeyProjection(model_cfg)
         self.mask_encoder = MaskEncoder(model_cfg, single_object=single_object)
         self.mask_decoder = MaskDecoder(model_cfg)
+        self.mask_decoder2 = MaskDecoder(model_cfg)
         self.pixel_fuser = PixelFeatureFuser(model_cfg, single_object=single_object)
         self.event_fuser = PixelFeatureFuser(model_cfg, single_object=single_object)
         if self.object_transformer_enabled:
             self.object_transformer = QueryTransformer(model_cfg)
             self.object_summarizer = ObjectSummarizer(model_cfg)
-            self.event_summarizer = ObjectSummarizer(model_cfg)
+            self.event_summarizer = EventSummarizer(model_cfg)
         self.aux_computer = AuxComputer(cfg)
+        self.regular_conv = nn.Conv2d(in_channels=256,
+                                      out_channels=256,
+                                      kernel_size=3,
+                                      stride=1,
+                                      padding=1,
+                                      bias=False)
+        self.alpha = nn.Parameter(torch.ones(1,) / 2)
 
         self.register_buffer("pixel_mean", torch.Tensor(model_cfg.pixel_mean).view(-1, 1, 1), False)
         self.register_buffer("pixel_std", torch.Tensor(model_cfg.pixel_std).view(-1, 1, 1), False)
@@ -119,9 +127,9 @@ class CUTIE(nn.Module):
                       need_sk: bool = True,
                       need_ek: bool = True) -> (torch.Tensor, torch.Tensor, torch.Tensor):
         # key, shrinkage, selection = self.key_proj(final_pix_feat, final_evt_feat, need_s=need_sk, need_e=need_ek)
-        key, shrinkage, selection = self.key_proj(final_pix_feat, need_s=need_sk,
+        key, shrinkage, selection, offset = self.key_proj(final_pix_feat, final_evt_feat, need_s=need_sk,
                                                           need_e=need_ek)
-        return key, shrinkage, selection
+        return key, shrinkage, selection, offset
 
     def transform_event_key(self,
                             final_evt_feat: torch.Tensor,
@@ -206,16 +214,17 @@ class CUTIE(nn.Module):
         pixel_readout2 = self.pixel_fusion(pix_feat, pixel_readout, sensory, last_mask)
         event_feat = self.event_fusion(event_feat, event_readout, sensory, last_mask)
         # read from query transformer
-        mem_readout, aux_features = self.readout_query(pixel_readout2, event_feat, obj_memory, e_obj_memory,
+        mem_readout, e_mem_readout, aux_features = self.readout_query(pixel_readout2, event_feat, obj_memory, e_obj_memory,
                                                        selector=selector)
 
         aux_output = {
             'sensory': sensory,
             'q_logits': aux_features['logits'] if aux_features else None,
+            'e_logits': aux_features['e_logits'] if aux_features else None,
             'attn_mask': aux_features['attn_mask'] if aux_features else None,
         }
 
-        return mem_readout, aux_output
+        return mem_readout, e_mem_readout, aux_output
 
     def pixel_fusion(self,
                      pix_feat: torch.Tensor,
@@ -270,7 +279,9 @@ class CUTIE(nn.Module):
 
     def segment(self,
                 ms_image_feat: List[torch.Tensor],
+                ms_event_feat: List[torch.Tensor],
                 memory_readout: torch.Tensor,
+                e_memory_readout: torch.Tensor,
                 sensory: torch.Tensor,
                 *,
                 selector: bool = None,
@@ -290,7 +301,16 @@ class CUTIE(nn.Module):
                                             chunk_size=chunk_size,
                                             update_sensory=update_sensory)
 
+        _, e_logits = self.mask_decoder2(ms_event_feat,
+                                            e_memory_readout,
+                                            sensory,
+                                            chunk_size=chunk_size,
+                                            update_sensory=update_sensory)
+        
+        sensory = sensory + _
+
         prob = torch.sigmoid(logits)
+        e_prob = torch.sigmoid(e_logits)
         if selector is not None:
             prob = prob * selector
 
@@ -299,6 +319,12 @@ class CUTIE(nn.Module):
         logits = F.interpolate(logits, scale_factor=4, mode='bilinear', align_corners=False)
         prob = F.softmax(logits, dim=1)
 
+        e_logits = aggregate(e_prob, dim=1)
+        e_logits = F.interpolate(e_logits, scale_factor=4, mode='bilinear', align_corners=False)
+        e_prob = F.softmax(e_logits, dim=1)
+       
+        logits = (self.alpha * logits) + ((1- self.alpha) * e_logits)
+        prob  = (self.alpha * prob) + ((1 - self.alpha) * e_prob)
         return sensory, logits, prob
 
     def compute_aux(self, pix_feat: torch.Tensor, aux_inputs: Dict[str, torch.Tensor],
