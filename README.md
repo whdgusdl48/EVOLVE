@@ -34,6 +34,14 @@ OMP_NUM_THREADS=4 torchrun --master_port 25357 --nproc_per_node=4 evolve/train.p
 - Models and visualizations will be saved in `./output/`.
 - To load a pre-trained model, e.g., to continue main training from the final model from pre-training, specify `weights=[path to the model]`.
 
+## Evaluation Command
+
+```bash
+python cutie/eval_vos.py dataset=[dataset] weights=[path to model file] model=[small/base]
+```
+
+- Possible options for `dataset`: see `config/eval_config.yaml`.
+- We evaulate our models on base model setting.
 
 
 ## Qualititative Result
